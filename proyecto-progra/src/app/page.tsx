@@ -107,12 +107,6 @@ export default function Home() {
                                 <strong>Autores:</strong> {book.volumeInfo.authors.join(', ')}
                             </p>
                         )}
-                            {book.volumeInfo.description && (
-                                <div
-                                    className="text-gray-700 text-xs mt-2 overflow-y-auto max-h-32"
-                                    dangerouslySetInnerHTML={{ __html: book.volumeInfo.description }}
-                                />
-                            )}
                         <Link href={`/books/${book.id}`}>
                             <button className="mt-auto px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 shadow text-xs">
                                 Ver detalles

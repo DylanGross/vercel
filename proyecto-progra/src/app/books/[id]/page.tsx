@@ -85,7 +85,12 @@ export default function BookDetails({ params }: { params: Promise<{ id: string }
                             {book.volumeInfo.categories && <p className="text-gray-600 mb-1">Categorías: <span className="font-medium">{book.volumeInfo.categories.join(', ')}</span></p>}
                         </div>
                     </div>
-                    {book.volumeInfo.description && <p className="text-gray-700 mb-6 whitespace-pre-line">{book.volumeInfo.description}</p>}
+                                        {book.volumeInfo.description && (
+                                            <div
+                                                className="text-gray-700 mb-6"
+                                                dangerouslySetInnerHTML={{ __html: book.volumeInfo.description }}
+                                            />
+                                        )}
 
                     <div className="mb-8">
                         <h2 className="text-xl font-semibold text-gray-800 mb-4">Agregar Reseña</h2>
