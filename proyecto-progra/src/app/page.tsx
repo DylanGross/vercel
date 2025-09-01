@@ -115,16 +115,6 @@ export default function Home() {
                     </div>
                 ))}
             </div>
-            {visibleCount < books.length && (
-                <div className="flex justify-center mt-8">
-                    <button
-                        onClick={() => setVisibleCount(visibleCount + 20)}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow"
-                    >
-                        Cargar más libros...
-                    </button>
-                </div>
-            )}
         </div>
     );
 }
