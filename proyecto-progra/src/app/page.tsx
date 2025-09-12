@@ -1,4 +1,8 @@
+
 "use client";
+
+// ...existing code...
+import { useRouter } from 'next/navigation';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -19,6 +23,13 @@ interface Book {
 }
 
 export default function Home() {
+    const router = useRouter();
+    useEffect(() => {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        if (!token) {
+            router.push('/login');
+        }
+    }, [router]);
     const [query, setQuery] = useState('');
     const [books, setBooks] = useState<Book[]>([]);
     const [loading, setLoading] = useState(false);
@@ -68,8 +79,16 @@ export default function Home() {
         }
     };
 
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        router.push('/login');
+    };
+
     return (
         <div className="min-h-screen bg-blue-50 p-8">
+            <div className="flex justify-end mb-4">
+                <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded">Cerrar sesión</button>
+            </div>
             <h1 className="text-3xl font-bold text-center mb-8 text-blue-900">Buscador de Libros</h1>
             <div className="flex justify-center mb-8">
                 <input

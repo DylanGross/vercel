@@ -23,6 +23,10 @@ export default function BookDetails({ params }: { params: Promise<{ id: string }
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [resolvedParams, setResolvedParams] = useState<{ id: string } | null>(null);
+    const [isFavorite, setIsFavorite] = useState(false);
+    const [inReadingList, setInReadingList] = useState(false);
+    const [favLoading, setFavLoading] = useState(false);
+    const [readLoading, setReadLoading] = useState(false);
 
     useEffect(() => {
         const resolveParams = async () => {
@@ -54,13 +58,23 @@ export default function BookDetails({ params }: { params: Promise<{ id: string }
             }
         };
 
+        const fetchUserLists = async () => {
+            const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+            if (!token) return;
+            try {
+                const res = await fetch('/api/profile', { headers: { Authorization: `Bearer ${token}` } });
+                const data = await res.json();
+                if (data.user) {
+                    setIsFavorite((data.user.favorites || []).includes(resolvedParams.id));
+                    setInReadingList((data.user.readingList || []).includes(resolvedParams.id));
+                }
+            } catch {}
+        };
+
         fetchBookDetails();
+        fetchUserLists();
     }, [resolvedParams]);
 
-    const handleReviewSubmit = (review: { rating: number; text: string }) => {
-        // Puedes agregar lógica aquí si quieres guardar la reseña en algún lado
-        // Por ahora solo es un placeholder para evitar el error
-    };
 
     if (loading) return <p>Cargando...</p>;
     if (error) return <p>{error}</p>;
@@ -83,18 +97,63 @@ export default function BookDetails({ params }: { params: Promise<{ id: string }
                             {book.volumeInfo.publishedDate && <p className="text-gray-600 mb-1">Publicado: <span className="font-medium">{book.volumeInfo.publishedDate}</span></p>}
                             {book.volumeInfo.pageCount && <p className="text-gray-600 mb-1">Páginas: <span className="font-medium">{book.volumeInfo.pageCount}</span></p>}
                             {book.volumeInfo.categories && <p className="text-gray-600 mb-1">Categorías: <span className="font-medium">{book.volumeInfo.categories.join(', ')}</span></p>}
+                            {/* Botones favoritos y lista de lectura */}
+                            {resolvedParams && (
+                                <div className="flex gap-4 mt-4">
+                                    <button
+                                        className={`px-4 py-2 rounded-lg font-semibold shadow ${isFavorite ? 'bg-yellow-400 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-yellow-500`}
+                                        disabled={favLoading}
+                                        onClick={async () => {
+                                            setFavLoading(true);
+                                            const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+                                            if (!token) return;
+                                            const res = await fetch('/api/user/favorites', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'Authorization': `Bearer ${token}`,
+                                                },
+                                                body: JSON.stringify({ bookId: resolvedParams.id }),
+                                            });
+                                            const data = await res.json();
+                                            if (res.ok) setIsFavorite(data.favorites.includes(resolvedParams.id));
+                                            setFavLoading(false);
+                                        }}
+                                    >{isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}</button>
+                                    <button
+                                        className={`px-4 py-2 rounded-lg font-semibold shadow ${inReadingList ? 'bg-blue-400 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-blue-500`}
+                                        disabled={readLoading}
+                                        onClick={async () => {
+                                            setReadLoading(true);
+                                            const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+                                            if (!token) return;
+                                            const res = await fetch('/api/user/reading-list', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'Authorization': `Bearer ${token}`,
+                                                },
+                                                body: JSON.stringify({ bookId: resolvedParams.id }),
+                                            });
+                                            const data = await res.json();
+                                            if (res.ok) setInReadingList(data.readingList.includes(resolvedParams.id));
+                                            setReadLoading(false);
+                                        }}
+                                    >{inReadingList ? 'Quitar de lectura' : 'Agregar a lectura'}</button>
+                                </div>
+                            )}
                         </div>
                     </div>
-                                        {book.volumeInfo.description && (
-                                            <div
-                                                className="text-gray-700 mb-6"
-                                                dangerouslySetInnerHTML={{ __html: book.volumeInfo.description }}
-                                            />
-                                        )}
+                    {book.volumeInfo.description && (
+                        <div
+                            className="text-gray-700 mb-6"
+                            dangerouslySetInnerHTML={{ __html: book.volumeInfo.description }}
+                        />
+                    )}
 
                     <div className="mb-8">
                         <h2 className="text-xl font-semibold text-gray-800 mb-4">Agregar Reseña</h2>
-                        <ReviewForm onSubmit={handleReviewSubmit} />
+                        {resolvedParams && <ReviewForm bookId={resolvedParams.id} />}
                     </div>
                 </>
             )}
