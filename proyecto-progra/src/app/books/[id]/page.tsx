@@ -81,6 +81,10 @@ export default function BookDetails({ params }: { params: Promise<{ id: string }
 
     return (
         <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-lg mt-8">
+            <button
+                className="mb-6 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold shadow hover:bg-gray-300"
+                onClick={() => window.location.href = '/'}
+            >← Volver al buscador</button>
             {book && (
                 <>
                     <div className="flex flex-col md:flex-row items-start gap-6 mb-6">

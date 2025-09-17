@@ -41,13 +41,12 @@ const ReviewForm: React.FC<{ bookId: string }> = ({ bookId }) => {
     const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    // Estado para edición
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editText, setEditText] = useState<string>('');
     const [editRating, setEditRating] = useState<number>(1);
     const [userId, setUserId] = useState<string | null>(null);
+    const [voteErrors, setVoteErrors] = useState<{ [id: string]: string }>({});
 
-    // Obtener userId del perfil
     useEffect(() => {
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         if (!token) return;
@@ -221,12 +220,15 @@ const ReviewForm: React.FC<{ bookId: string }> = ({ bookId }) => {
                             <div className="mb-2 text-gray-800">{r.text}</div>
                             <div className="text-xs text-gray-500 mb-2">Por: {r.user?.name || r.user?.email}</div>
                             <div className="flex gap-4 items-center mb-2">
-                                <span className="font-bold text-green-700">👍 {r.upVotes}</span>
                                 <button
-                                    className="text-green-700 hover:underline"
+                                    className="text-2xl text-green-700 hover:scale-110 transition-transform"
+                                    title="Votar positivo"
                                     onClick={async () => {
                                         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-                                        if (!token) return setError('Debes iniciar sesión');
+                                        if (!token) {
+                                            setVoteErrors(prev => ({ ...prev, [r._id]: 'Debes iniciar sesión para votar' }));
+                                            return;
+                                        }
                                         try {
                                             const res = await fetch('/api/reviews/vote', {
                                                 method: 'POST',
@@ -239,20 +241,24 @@ const ReviewForm: React.FC<{ bookId: string }> = ({ bookId }) => {
                                             const data = await res.json();
                                             if (res.ok) {
                                                 setReviews(reviews.map(rv => rv._id === r._id ? { ...rv, upVotes: data.upVotes, downVotes: data.downVotes } : rv));
+                                                setVoteErrors(prev => ({ ...prev, [r._id]: '' }));
                                             } else {
-                                                setError(data.error || 'Error al votar');
+                                                setVoteErrors(prev => ({ ...prev, [r._id]: data.error || 'Error al votar' }));
                                             }
                                         } catch {
-                                            setError('Error de red');
+                                            setVoteErrors(prev => ({ ...prev, [r._id]: 'Error de red' }));
                                         }
                                     }}
-                                >Votar 👍</button>
-                                <span className="font-bold text-red-600">👎 {r.downVotes}</span>
+                                >👍 <span className="text-base align-middle">{r.upVotes}</span></button>
                                 <button
-                                    className="text-red-600 hover:underline"
+                                    className="text-2xl text-red-600 hover:scale-110 transition-transform"
+                                    title="Votar negativo"
                                     onClick={async () => {
                                         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-                                        if (!token) return setError('Debes iniciar sesión');
+                                        if (!token) {
+                                            setVoteErrors(prev => ({ ...prev, [r._id]: 'Debes iniciar sesión para votar' }));
+                                            return;
+                                        }
                                         try {
                                             const res = await fetch('/api/reviews/vote', {
                                                 method: 'POST',
@@ -265,15 +271,17 @@ const ReviewForm: React.FC<{ bookId: string }> = ({ bookId }) => {
                                             const data = await res.json();
                                             if (res.ok) {
                                                 setReviews(reviews.map(rv => rv._id === r._id ? { ...rv, upVotes: data.upVotes, downVotes: data.downVotes } : rv));
+                                                setVoteErrors(prev => ({ ...prev, [r._id]: '' }));
                                             } else {
-                                                setError(data.error || 'Error al votar');
+                                                setVoteErrors(prev => ({ ...prev, [r._id]: data.error || 'Error al votar' }));
                                             }
                                         } catch {
-                                            setError('Error de red');
+                                            setVoteErrors(prev => ({ ...prev, [r._id]: 'Error de red' }));
                                         }
                                     }}
-                                >Votar 👎</button>
+                                >👎 <span className="text-base align-middle">{r.downVotes}</span></button>
                             </div>
+                            {voteErrors[r._id] && <p className="text-red-600 text-sm mt-1">{voteErrors[r._id]}</p>}
                             {/* Botones de editar/eliminar solo para el dueño */}
                             {userId && r.user && (r.user as any)._id === userId && (
                                 <div className="flex gap-2 mt-2">
