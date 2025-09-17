@@ -101,7 +101,7 @@ export default function BookDetails({ params }: { params: Promise<{ id: string }
                             {book.volumeInfo.publishedDate && <p className="text-gray-600 mb-1">Publicado: <span className="font-medium">{book.volumeInfo.publishedDate}</span></p>}
                             {book.volumeInfo.pageCount && <p className="text-gray-600 mb-1">Páginas: <span className="font-medium">{book.volumeInfo.pageCount}</span></p>}
                             {book.volumeInfo.categories && <p className="text-gray-600 mb-1">Categorías: <span className="font-medium">{book.volumeInfo.categories.join(', ')}</span></p>}
-                            {/* Botones favoritos y lista de lectura */}
+
                             {resolvedParams && (
                                 <div className="flex gap-4 mt-4">
                                     <button

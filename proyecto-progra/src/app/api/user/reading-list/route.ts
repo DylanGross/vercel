@@ -3,7 +3,6 @@ import dbConnect from '@/lib/mongodb';
 import { User } from '@/models/User';
 import { verifyAuth } from '@/lib/auth';
 
-// POST: Agregar/quitar libro en lista de lectura
 export async function POST(req: NextRequest) {
   const decoded = verifyAuth(req);
   if (decoded instanceof NextResponse) return decoded;
