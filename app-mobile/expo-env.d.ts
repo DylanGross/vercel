@@ -1,1 +1,3 @@
-// Archivo vacío para evitar errores de tipos. Puedes eliminarlo si no lo usas.
+/// <reference types="expo/types" />
+
+// NOTE: This file should not be edited and should be in your git ignore
