@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import './App.css';
 
@@ -49,7 +49,7 @@ function App() {
     
     try {
       // Paso 1: Obtener mensaje SIWE
-      const res = await axios.post('http://localhost:3000/auth/message', { address });
+      const res = await axios.post('http://localhost:3001/api/auth/message', { address });
       const message = res.data.message;
       
       // Paso 2: Firmar con MetaMask
@@ -59,7 +59,7 @@ function App() {
       });
       
       // Paso 3: Verificar y obtener JWT
-      const signinRes = await axios.post('http://localhost:3000/auth/signin', { 
+      const signinRes = await axios.post('http://localhost:3001/api/auth/signin', { 
         message, 
         signature 
       });
@@ -79,7 +79,7 @@ function App() {
   const loadFaucetStatus = async (token: string) => {
     if (!address) return;
     try {
-      const res = await axios.get(`http://localhost:3000/faucet/status/${address}`, {
+      const res = await axios.get(`http://localhost:3001/api/faucet/status/${address}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFaucetStatus(res.data);
@@ -95,7 +95,7 @@ function App() {
     
     try {
       const res = await axios.post(
-        'http://localhost:3000/faucet/claim',
+        'http://localhost:3001/api/faucet/claim',
         { address },
         { headers: { Authorization: `Bearer ${jwt}` } }
       );
