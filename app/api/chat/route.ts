@@ -1,132 +1,56 @@
-import { OpenAIStream, StreamingTextResponse } from 'ai';
 import OpenAI from 'openai';
-import { NextRequest } from 'next/server';
+import { OpenAIStream, StreamingTextResponse } from 'ai';
+import { getAllTasks, getTaskStats } from '@/lib/tasks';
 
-// Configuración de OpenRouter usando el SDK de OpenAI
-const openrouter = new OpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY,
-  baseURL: process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1',
-  defaultHeaders: {
-    'HTTP-Referer': process.env.SITE_URL || 'http://localhost:3000',
-    'X-Title': 'Chatbot Next.js',
-  },
-});
-
-// Configuración de runtime de Edge para mejor performance
+// Configuración
 export const runtime = 'edge';
 
-// Función para sanitizar el input del usuario
-function sanitizeInput(input: string): string {
-  // Remover caracteres potencialmente peligrosos
-  return input.trim().slice(0, 4000); // Limitar a 4000 caracteres
-}
+// Crear cliente OpenAI apuntando a OpenRouter
+const client = new OpenAI({
+  apiKey: process.env.OPENROUTER_API_KEY || '',
+  baseURL: 'https://openrouter.ai/api/v1',
+});
 
-// Validar el request
-function validateRequest(messages: any[]): { valid: boolean; error?: string } {
-  if (!messages || !Array.isArray(messages)) {
-    return { valid: false, error: 'Messages must be an array' };
-  }
-
-  if (messages.length === 0) {
-    return { valid: false, error: 'Messages array cannot be empty' };
-  }
-
-  for (const message of messages) {
-    if (!message.role || !message.content) {
-      return { valid: false, error: 'Each message must have role and content' };
-    }
-    if (!['user', 'assistant', 'system'].includes(message.role)) {
-      return { valid: false, error: 'Invalid message role' };
-    }
-  }
-
-  return { valid: true };
-}
-
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    // Verificar que la API key esté configurada
-    if (!process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY === 'sk-or-v1-your-api-key-here') {
-      return new Response(
-        JSON.stringify({ 
-          error: 'API key no configurada. Por favor configura OPENROUTER_API_KEY en .env.local' 
-        }),
-        { 
-          status: 500,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    // Parse del body
     const { messages } = await req.json();
 
-    // Validar el request
-    const validation = validateRequest(messages);
-    if (!validation.valid) {
-      return new Response(
-        JSON.stringify({ error: validation.error }),
-        { 
-          status: 400,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
-    }
+    // Obtener todas las tareas para incluirlas en el contexto
+    const allTasks = getAllTasks();
+    const stats = getTaskStats('all-time');
 
-    // Sanitizar los mensajes
-    const sanitizedMessages = messages.map((msg: any) => ({
-      role: msg.role,
-      content: sanitizeInput(msg.content),
-    }));
+    // Formatear las tareas para el contexto
+    const tasksContext = allTasks.length > 0 
+      ? `\n\nTareas actuales del usuario:\n${allTasks.map((t: any) => 
+          `- [${t.completed ? '✅' : '⬜'}] ${t.title} (Prioridad: ${t.priority}, Categoría: ${t.category}${t.dueDate ? ', Vence: ' + t.dueDate : ''})`
+        ).join('\n')}\n\nEstadísticas:\n- Total: ${stats.summary.totalTasks}\n- Completadas: ${stats.summary.completedTasks}\n- Pendientes: ${stats.summary.pendingTasks}\n- Por prioridad: Alta=${stats.byPriority.high.total}, Media=${stats.byPriority.medium.total}, Baja=${stats.byPriority.low.total}`
+      : '\n\nEl usuario aún no tiene tareas creadas.';
 
-    // Llamada a OpenRouter
-    const response = await openrouter.chat.completions.create({
-      model: process.env.OPENROUTER_MODEL || 'meta-llama/llama-3.2-3b-instruct:free',
+    const response = await client.chat.completions.create({
+      model: 'meta-llama/llama-3.2-3b-instruct:free',
       stream: true,
-      messages: sanitizedMessages,
-      max_tokens: 1000,
-      temperature: 0.7,
+      messages: [
+        {
+          role: 'system',
+          content: `Eres un asistente de consulta de tareas. Tu función es SOLO ver y analizar las tareas del usuario para responder sus preguntas.
+
+IMPORTANTE:
+- NO puedes crear, modificar o eliminar tareas
+- Solo puedes ver las tareas existentes y proporcionar información sobre ellas
+- Si el usuario pide crear/modificar/eliminar una tarea, explícale amablemente que debe usar los botones de gestión manual en el panel lateral izquierdo (botón ➕)
+- Puedes proporcionar resúmenes, estadísticas, recordatorios y análisis de las tareas existentes${tasksContext}`,
+        },
+        ...messages,
+      ],
     });
 
-    // Convertir la respuesta a un stream
-    const stream = OpenAIStream(response);
-
-    // Retornar el stream al cliente
+    const stream = OpenAIStream(response as any);
     return new StreamingTextResponse(stream);
-
   } catch (error: any) {
-    console.error('Error en API route:', error);
-    
-    // Manejo de errores específicos
-    if (error?.status === 401) {
-      return new Response(
-        JSON.stringify({ error: 'API key inválida' }),
-        { 
-          status: 401,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    if (error?.status === 429) {
-      return new Response(
-        JSON.stringify({ error: 'Límite de requests excedido. Por favor espera un momento.' }),
-        { 
-          status: 429,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
+    console.error('Error:', error);
     return new Response(
-      JSON.stringify({ 
-        error: 'Error al procesar la solicitud',
-        details: error?.message || 'Unknown error'
-      }),
-      { 
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      }
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }

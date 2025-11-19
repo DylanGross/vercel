@@ -1,17 +1,17 @@
-# 🤖 Chatbot con Next.js y AI SDK
+# 🎯 AI Todo Manager
 
-Un chatbot inteligente desarrollado con Next.js 15, Vercel AI SDK y OpenRouter.
+Gestor de tareas inteligente con interfaz conversacional usando Next.js, Vercel AI SDK, y OpenRouter.
 
-## 🚀 Características
+## ✨ Características
 
-- ✅ **Interfaz moderna y responsiva** con Tailwind CSS
-- ✅ **Streaming de respuestas en tiempo real** del LLM
-- ✅ **Manejo seguro de API keys** (solo en backend)
-- ✅ **Validación y sanitización** de inputs del usuario
-- ✅ **Indicadores de carga** y typing indicators
-- ✅ **Manejo robusto de errores**
-- ✅ **Auto-scroll** hacia los mensajes más recientes
-- ✅ **Persistencia de conversación** durante la sesión
+- ✅ **Gestión de Tareas por Conversación Natural**: Crea, actualiza y elimina tareas hablando naturalmente
+- ✅ **5 Herramientas Inteligentes**: El AI usa tool calling para ejecutar acciones automáticamente
+- ✅ **Búsqueda y Filtros Avanzados**: Encuentra tareas por texto, prioridad, categoría, fecha, etc.
+- ✅ **Estadísticas de Productividad**: Analytics completos de tus tareas y progreso
+- ✅ **Base de Datos Persistente**: Tus tareas se guardan en SQLite localmente
+- ✅ **UI Moderna y Responsiva**: Interfaz con fondo de galaxia animado
+- ✅ **Streaming en Tiempo Real**: Respuestas del AI en vivo
+- ✅ **Seguridad Implementada**: API keys solo en backend, validación de inputs
 
 ## 🔒 Seguridad
 
@@ -27,50 +27,35 @@ Este proyecto implementa las mejores prácticas de seguridad:
 ## 📋 Requisitos Previos
 
 - Node.js 18+ instalado
+## 📋 Requisitos Previos
+
+- Node.js 18+ instalado
 - Una cuenta en [OpenRouter](https://openrouter.ai/) para obtener tu API key (gratuita)
 - Git instalado
 
-## 🛠️ Instalación
+## ⚡ Instalación Rápida
 
-### 1. Clonar el repositorio o crear el proyecto
-
-```bash
-# Si clonaste el repo
-cd vercel
-```
-
-### 2. Instalar dependencias
+### 1. Instalar dependencias
 
 ```bash
 npm install
 ```
 
-### 3. Configurar variables de entorno
+### 2. Configurar API Key
 
-Crea un archivo `.env.local` en la raíz del proyecto:
-
-```bash
-# Copia el archivo de ejemplo
-copy .env.example .env.local
-```
-
-Luego edita `.env.local` y agrega tu API key de OpenRouter:
+Edita el archivo `.env.local` y reemplaza con tu API key real:
 
 ```env
-OPENROUTER_API_KEY=sk-or-v1-tu-api-key-aqui
-OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-OPENROUTER_MODEL=meta-llama/llama-3.2-3b-instruct:free
+OPENROUTER_API_KEY=sk-or-v1-TU-KEY-AQUI
 ```
 
-#### Cómo obtener tu API Key de OpenRouter:
+**Cómo obtener tu API Key:**
+1. Ve a [https://openrouter.ai/keys](https://openrouter.ai/keys)
+2. Crea una cuenta gratuita
+3. Genera una nueva API key
+4. Cópiala y pégala en `.env.local`
 
-1. Ve a [https://openrouter.ai/](https://openrouter.ai/)
-2. Crea una cuenta (gratis)
-3. Ve a [https://openrouter.ai/keys](https://openrouter.ai/keys)
-4. Crea una nueva API key
-5. Cópiala y pégala en `.env.local`
-
-### 4. Ejecutar el proyecto en desarrollo
+### 3. Ejecutar la aplicación
 
 ```bash
 npm run dev
@@ -78,16 +63,77 @@ npm run dev
 
 Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-## 🎯 Modelos Gratuitos Disponibles
+## 📝 Las 5 Herramientas (Tools)
+
+### 1️⃣ createTask
+Crea nuevas tareas conversacionalmente.
+
+**Ejemplos:**
+- "Agregar tarea: comprar leche"
+- "Necesito recordar llamar al doctor mañana"
+- "Crea una tarea urgente para terminar el informe"
+
+### 2️⃣ updateTask
+Modifica tareas existentes.
+
+**Ejemplos:**
+- "Marca la tarea 1 como completada"
+- "Cambia la prioridad de 'hacer ejercicio' a alta"
+- "Mueve la fecha del doctor a pasado mañana"
+
+### 3️⃣ deleteTask
+Elimina tareas del sistema.
+
+**Ejemplos:**
+- "Elimina la tarea de comprar leche"
+- "Borra la tarea #3"
+
+### 4️⃣ searchTasks
+Busca y filtra tareas con criterios avanzados.
+
+**Ejemplos:**
+- "Muéstrame todas mis tareas pendientes"
+- "Lista las tareas de alta prioridad"
+- "Busca tareas que contengan 'informe'"
+- "Tareas que vencen esta semana"
+
+### 5️⃣ getTaskStats
+Genera estadísticas de productividad.
+
+**Ejemplos:**
+- "¿Qué tan productivo he sido esta semana?"
+- "Muéstrame mis estadísticas"
+- "¿Cuántas tareas he completado?"
+
+## 🎯 Modelos LLM Disponibles
 
 Puedes cambiar el modelo en `.env.local`:
 
 ```env
-# Modelos gratuitos recomendados:
+# Modelos gratuitos:
 OPENROUTER_MODEL=meta-llama/llama-3.2-3b-instruct:free
-# O también:
-# OPENROUTER_MODEL=google/gemma-2-9b-it:free
-# OPENROUTER_MODEL=mistralai/mistral-7b-instruct:free
+OPENROUTER_MODEL=google/gemma-2-9b-it:free
+OPENROUTER_MODEL=microsoft/phi-3-mini-128k-instruct:free
+
+# Modelos de pago (mejores resultados):
+OPENROUTER_MODEL=anthropic/claude-3-haiku
+OPENROUTER_MODEL=openai/gpt-4o-mini
+```
+
+## 🗄️ Base de Datos
+
+Las tareas se almacenan en `tasks.db` (SQLite) con el siguiente schema:
+
+```sql
+- id: ID único
+- title: Título de la tarea
+- completed: Estado (0=pendiente, 1=completada)
+- priority: low | medium | high
+- category: work | personal | shopping | health | other
+- dueDate: Fecha límite (YYYY-MM-DD)
+- createdAt: Fecha de creación
+- updatedAt: Última modificación
+- deleted: Soft delete (0=activa, 1=eliminada)
 ```
 
 ## 📁 Estructura del Proyecto
@@ -96,78 +142,108 @@ OPENROUTER_MODEL=meta-llama/llama-3.2-3b-instruct:free
 vercel/
 ├── app/
 │   ├── api/
-│   │   └── chat/
-│   │       └── route.ts          # API Route (Backend) - Maneja peticiones a OpenRouter
+│   │   ├── chat/
+│   │   │   └── route.ts          # API con tool calling (5 tools)
+│   │   └── tasks/
+│   │       └── route.ts          # CRUD REST API
 │   ├── components/
-│   │   └── Chat.tsx              # Componente de interfaz del chat
-│   ├── globals.css               # Estilos globales
-│   ├── layout.tsx                # Layout principal
-│   └── page.tsx                  # Página principal
+│   │   ├── Chat.tsx              # Componente principal del chat
+│   │   └── GalaxyBackground.tsx  # Fondo animado
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── lib/
+│   ├── db.ts                     # Configuración de SQLite
+│   └── tasks.ts                  # Funciones CRUD
 ├── .env.local                    # Variables de entorno (NO commitear)
-├── .env.example                  # Ejemplo de variables de entorno
-├── .gitignore                    # Archivos ignorados por Git
-├── next.config.js                # Configuración de Next.js
-├── package.json                  # Dependencias del proyecto
-├── postcss.config.js             # Configuración de PostCSS
-├── tailwind.config.js            # Configuración de Tailwind
-├── tsconfig.json                 # Configuración de TypeScript
-└── README.md                     # Este archivo
+├── .gitignore
+├── package.json
+├── README.md
+└── tasks.db                      # Base de datos (auto-generada)
 ```
 
-## 🧩 Componentes Principales
+## 🛠️ Tecnologías
 
-### 1. API Route (`app/api/chat/route.ts`)
+- **[Next.js 15](https://nextjs.org/)** - Framework React con App Router
+- **[Vercel AI SDK](https://sdk.vercel.ai/)** - SDK para tool calling y streaming
+- **[OpenRouter](https://openrouter.ai/)** - Acceso a múltiples modelos LLM
+- **[Better SQLite3](https://github.com/WiseLibs/better-sqlite3)** - Base de datos local
+- **[Tailwind CSS](https://tailwindcss.com/)** - Framework CSS
+- **[TypeScript](https://www.typescriptlang.org/)** - Tipado estático
+- **[Zod](https://zod.dev/)** - Validación de schemas
 
-- **Propósito**: Backend seguro para comunicación con OpenRouter
-- **Características**:
-  - Validación de API key
-  - Sanitización de inputs
-  - Manejo de streaming
-  - Gestión de errores específicos
+## 📊 API Endpoints
 
-### 2. Chat Component (`app/components/Chat.tsx`)
+### Chat con Tool Calling
+```
+POST /api/chat
+```
+- Streaming de respuestas del LLM
+- Ejecución automática de las 5 tools
 
-- **Propósito**: Interfaz de usuario del chat
-- **Características**:
-  - Hook `useChat` de Vercel AI SDK
-  - Auto-scroll
-  - Typing indicators
-  - Manejo de errores en UI
-  - Validación de caracteres
+### Tareas CRUD
+```
+GET /api/tasks?completed=false&priority=high
+POST /api/tasks
+PUT /api/tasks
+DELETE /api/tasks?id=1
+```
+
+## 🐛 Troubleshooting
+
+### Error: API key no configurada
+**Solución**: Verifica que `.env.local` existe y tiene tu API key correcta
+
+### Error: Cannot find module 'better-sqlite3'
+**Solución**: `npm install better-sqlite3 @types/better-sqlite3`
+
+### Las tareas no persisten
+**Solución**: Verifica que `tasks.db` se creó en la raíz del proyecto
+
+### El servidor no inicia
+**Solución**: 
+1. Cierra todas las terminales
+2. `npm install`
+3. `npm run dev`
 
 ## 🔧 Scripts Disponibles
 
 ```bash
-# Desarrollo
-npm run dev
-
-# Build para producción
-npm run build
-
-# Ejecutar en producción
-npm start
-
-# Linting
-npm run lint
+npm run dev      # Servidor de desarrollo
+npm run build    # Build para producción
+npm start        # Servidor de producción
+npm run lint     # Linter
 ```
-
-## 📚 Tecnologías Utilizadas
-
-- **[Next.js 15](https://nextjs.org/)** - Framework React con App Router
-- **[Vercel AI SDK](https://sdk.vercel.ai/)** - SDK para integración con LLMs
-- **[OpenRouter](https://openrouter.ai/)** - Proveedor de acceso a múltiples LLMs
-- **[Tailwind CSS](https://tailwindcss.com/)** - Framework de CSS utility-first
-- **[TypeScript](https://www.typescriptlang.org/)** - Tipado estático para JavaScript
 
 ## 🚀 Deploy en Vercel
 
-1. Sube tu código a GitHub (asegúrate de NO incluir `.env.local`)
+1. Sube tu código a GitHub (**sin** `.env.local`)
+2. Ve a [vercel.com](https://vercel.com/) e importa tu repositorio
+3. Agrega las variables de entorno en el dashboard:
+   - `OPENROUTER_API_KEY`
+   - `OPENROUTER_BASE_URL`
+   - `OPENROUTER_MODEL`
+4. Deploy automático
 
-2. Ve a [vercel.com](https://vercel.com/)
+**Nota**: SQLite funciona en Vercel pero los datos no persisten entre deployments. Para producción considera PostgreSQL o MongoDB.
 
-3. Importa tu repositorio
+## 📖 Recursos Adicionales
 
-4. Agrega las variables de entorno en el dashboard de Vercel:
+- [Documentación del Proyecto](./README_TODO.md) - Documentación técnica detallada
+- [Guía de Uso](./GUIA_DE_USO.md) - Instrucciones paso a paso
+- [Setup Rápido](./SETUP_RAPIDO.md) - Configuración rápida
+
+## 📄 Licencia
+
+MIT
+
+## 👨‍💻 Proyecto Educativo
+
+Ejercicio 13 - Parte 2B: AI Todo Manager
+
+---
+
+**¡Gestiona tus tareas de manera inteligente! 🎉**
    - `OPENROUTER_API_KEY`
    - `OPENROUTER_BASE_URL`
    - `OPENROUTER_MODEL`

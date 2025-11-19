@@ -1,6 +1,7 @@
 {
-  "name": "chatbot-nextjs",
-  "version": "0.1.0",
+  "name": "ai-todo-manager",
+  "version": "1.0.0",
+  "description": "Gestor de tareas inteligente con interfaz conversacional",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,11 +10,15 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^2.0.67",
+    "@types/better-sqlite3": "^7.6.13",
     "ai": "^3.4.32",
+    "better-sqlite3": "^12.4.1",
     "next": "^15.0.3",
     "openai": "^4.67.3",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^22",

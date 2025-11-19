@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Chatbot AI - Next.js & Vercel AI SDK',
-  description: 'Chatbot inteligente usando Next.js, Vercel AI SDK y OpenRouter',
+  title: 'AI Todo Manager - Gestiona tus tareas con IA',
+  description: 'Gestor de tareas inteligente con interfaz conversacional usando Next.js, Vercel AI SDK, y OpenRouter',
 };
 
 export default function RootLayout({
